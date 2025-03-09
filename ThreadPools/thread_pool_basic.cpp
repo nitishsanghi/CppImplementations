@@ -11,8 +11,18 @@ using namespace std;
 class ThreadPoolBasic{
     public:
         ThreadPoolBasic(int n_threads){
-            for(int i = 0; i < n_threads; ++i){
-                nThreads.emplace_back(std::thread([this]{thread_loop();}));
+            try{
+                for(int i = 0; i < n_threads; ++i){
+                    nThreads.emplace_back(std::thread([this]{thread_loop();}));
+                }
+            }
+            catch (...){
+                shutdown();
+                for(auto& thread : nThreads){
+                    if(thread.joinable())
+                        thread.join();
+                }
+                throw;
             }
         }
 
@@ -55,7 +65,16 @@ class ThreadPoolBasic{
             function<void()> task = std::move(tasks.front());
             tasks.pop();
             lock.unlock();
-            task();
+
+            try{
+                task();
+            }
+            catch(const std::exception& e){
+                std::cerr << "Task threw exception: " << e.what() << std::endl;
+            } 
+            catch (...) {
+                std::cerr << "Task threw unknown exception" << std::endl;
+            }
         }
 }
 
