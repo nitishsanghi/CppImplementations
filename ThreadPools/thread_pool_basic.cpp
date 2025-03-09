@@ -36,6 +36,13 @@ class ThreadPoolBasic{
             unique_lock<mutex> lock(m);
             if(stopFlag)
                 return;
+            
+            cv.wait(lock,[&]{return tasks.size() < 10000 || stopFlag;});
+
+
+            if(stopFlag)
+                return;
+
             tasks.push(std::move(task));
             cv.notify_one();
         }
@@ -76,7 +83,7 @@ class ThreadPoolBasic{
                 std::cerr << "Task threw unknown exception" << std::endl;
             }
         }
-}
+    }
 
 };
 
