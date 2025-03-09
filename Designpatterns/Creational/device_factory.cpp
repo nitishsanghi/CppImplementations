@@ -63,6 +63,10 @@ int main(){
     b->showDetails();
     c->showDetails();
 
+    delete a;
+    delete b;
+    delete c;
+
 
     return 0;
 }
