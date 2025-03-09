@@ -33,6 +33,13 @@ class Smartwatch : public Device{
         }
 };
 
+class Desktop : public Device{
+    public:
+        void showDetails(){
+            std::cout << "Desktop for gaming" << std::endl;
+        }
+};
+
 class DeviceFactory{
     public:
 
@@ -40,18 +47,22 @@ class DeviceFactory{
 
         static std::unique_ptr<Device> createDevice(const std::string& device_type){
             if(device_registry.find(device_type) != device_registry.end()){
-                device_registry.find(device_type)->second();
+                return device_registry.find(device_type)->second();
             }
             else{
                 throw std::invalid_argument("Unknown device type: " + device_type);
             }
         }
 
+        static void registerDevice(std::string device_type, DeviceCreator create){
+            device_registry.insert({device_type, create});
+        }
+
     private:
        static std::unordered_map<std::string, DeviceFactory::DeviceCreator> device_registry;
 };
 
-std::unordered_map<std::string, DeviceFactory::DeviceCreator> device_registry = {
+std::unordered_map<std::string, DeviceFactory::DeviceCreator> DeviceFactory::device_registry = {
     {"Smartphone", [](){return std::make_unique<Smartphone>();}},
     {"Laptop", [](){return std::make_unique<Laptop>();}},
     {"Smartwatch", [](){return std::make_unique<Smartwatch>();}}
@@ -65,6 +76,14 @@ int main(){
     a->showDetails();
     b->showDetails();
     c->showDetails();
+
+    std::cout << "Adding more devices" << std::endl;
+
+    DeviceFactory::registerDevice("Desktop",[](){return std::make_unique<Desktop>();});
+
+    auto d = DeviceFactory::createDevice("Desktop");
+
+    d->showDetails();
 
     return 0;
 }
