@@ -2,6 +2,7 @@
 #include <string>
 #include <unordered_map>
 #include <functional>
+#include <memory>
 
 class Device{
     public:
@@ -34,18 +35,21 @@ class Smartwatch : public Device{
 
 class DeviceFactory{
     public:
-        static Device* createDevice(const std::string& device_type){
+        static std::unique_ptr<Device> createDevice(const std::string& device_type){
             if(device_type == "Smartphone"){
-                Device* device =  new Smartphone();
+                std::unique_ptr<Device> device =  std::make_unique<Smartphone>();
                 return device;
             }
             else if(device_type == "Laptop"){
-                Device* device =  new Laptop();
+                std::unique_ptr<Device> device =  std::make_unique<Laptop>();
                 return device;
             }
-            else {   
-                Device* device =  new Smartwatch();
+            else if(device_type == "Smartwatch"){   
+                std::unique_ptr<Device> device =  std::make_unique<Smartwatch>();
                 return device;
+            }
+            else{
+                throw std::invalid_argument("Unknown device type: " + device_type);
             }
         }
 
@@ -54,18 +58,13 @@ class DeviceFactory{
 };
 
 int main(){
-    DeviceFactory df;
-    auto a = df.createDevice("Smartphone");
-    auto b = df.createDevice("Laptop");
-    auto c = df.createDevice("Smartwatch");
+    auto a = DeviceFactory::createDevice("Smartphone");
+    auto b = DeviceFactory::createDevice("Laptop");
+    auto c = DeviceFactory::createDevice("Smartwatch");
 
     a->showDetails();
     b->showDetails();
     c->showDetails();
-
-    delete a;
-    delete b;
-    delete c;
 
     return 0;
 }
